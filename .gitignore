@@ -1,0 +1,62 @@
+# Python字节码文件
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C扩展
+*.so
+
+# 分发/打包
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 虚拟环境
+venv/
+venv_test/
+env/
+ENV/
+
+# 测试与覆盖率
+.coverage
+htmlcov/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+
+# 日志
+*.log
+logs/
+
+# IDE相关
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 项目特定忽略
+# 可能包含敏感信息的配置文件
+.env
+*.env
+*.ini
+config.json
+
+# 临时文件
+*.tmp
+temp/ 
