@@ -7,7 +7,7 @@
 - 提供两种适配器实现：
   - `CompanyChatModel`: 连接公司内部LLM API
   - `CompanyAzureChatModel`: 连接Azure OpenAI API
-- 支持公司特定的认证头部（AGI-Platform-Application-ID、X-DSP-User-Login-As、X-E2E-Trust-Token）
+- 支持公司特定的认证头部（GAI-Platform-Application-ID、X-DSP-User-Login-As、X-E2E-Trust-Token）
 - 内置令牌刷新机制，可自动刷新过期令牌
 - 强大的重试机制，能够自动处理临时性错误
 - 支持同步和异步调用方式
@@ -204,7 +204,7 @@ print(response.content)
 | 参数 | 类型 | 描述 | 默认值 |
 |------|------|------|--------|
 | api_url | 字符串 | 公司LLM API的URL | 必填 |
-| application_id | 字符串 | AGI-Platform-Application-ID头部 | 必填 |
+| application_id | 字符串 | GAI-Platform-Application-ID头部 | 必填 |
 | user_login_as | 字符串 | X-DSP-User-Login-As头部 | 必填 |
 | trust_token | SecretStr | X-E2E-Trust-Token头部 | 必填 |
 | model | 字符串 | 使用的模型名称 | "gpt-3.5-turbo" |
@@ -234,7 +234,7 @@ print(response.content)
 | 参数 | 类型 | 描述 | 默认值 |
 |------|------|------|--------|
 | deployment_name | 字符串 | Azure OpenAI API部署名称 | 必填 |
-| application_id | 字符串 | AGI-Platform-Application-ID头部 | 必填 |
+| application_id | 字符串 | GAI-Platform-Application-ID头部 | 必填 |
 | user_login_as | 字符串 | X-DSP-User-Login-As头部 | 必填 |
 | trust_token | SecretStr | X-E2E-Trust-Token头部 | 必填 |
 | openai_api_version | 字符串 | Azure OpenAI API版本 | "2023-05-15" |

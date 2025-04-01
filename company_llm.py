@@ -36,7 +36,7 @@ class CompanyChatModel(BaseChatModel):
     
     # API配置
     api_url: str = Field(..., description="公司LLM API的URL")
-    application_id: str = Field(..., description="AGI-Platform-Application-ID")
+    application_id: str = Field(..., description="GAI-Platform-Application-ID")
     user_login_as: str = Field(..., description="X-DSP-User-Login-As")
     trust_token: SecretStr = Field(..., description="X-E2E-Trust-Token")
     
@@ -127,7 +127,7 @@ class CompanyChatModel(BaseChatModel):
         """构建请求头"""
         return {
             "Content-Type": "application/json",
-            "AGI-Platform-Application-ID": self.application_id,
+            "GAI-Platform-Application-ID": self.application_id,
             "X-DSP-User-Login-As": self.user_login_as,
             "X-E2E-Trust-Token": self.trust_token.get_secret_value(),
         }

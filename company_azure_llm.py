@@ -50,7 +50,7 @@ class CompanyAzureChatModel(BaseChatModel):
     azure_deployment: Optional[str] = Field(None, alias="deployment_name")
     
     # 公司特定的认证头
-    application_id: str = Field(..., description="AGI-Platform-Application-ID")
+    application_id: str = Field(..., description="GAI-Platform-Application-ID")
     user_login_as: str = Field(..., description="X-DSP-User-Login-As")
     trust_token: SecretStr = Field(..., description="X-E2E-Trust-Token")
     
@@ -314,7 +314,7 @@ class CompanyAzureChatModel(BaseChatModel):
             "timeout": self.request_timeout or self.timeout,
             "max_retries": self.max_retries,
             "default_headers": {
-                "AGI-Platform-Application-ID": self.application_id,
+                "GAI-Platform-Application-ID": self.application_id,
                 "X-DSP-User-Login-As": self.user_login_as,
                 "X-E2E-Trust-Token": self.trust_token.get_secret_value(),
             },

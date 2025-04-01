@@ -28,7 +28,7 @@ class TestCompanyChatModel(unittest.TestCase):
         """测试请求头构建功能"""
         headers = self.model._headers
         self.assertEqual(headers["Content-Type"], "application/json")
-        self.assertEqual(headers["AGI-Platform-Application-ID"], "test-app-id")
+        self.assertEqual(headers["GAI-Platform-Application-ID"], "test-app-id")
         self.assertEqual(headers["X-DSP-User-Login-As"], "test-user@example.com")
         self.assertEqual(headers["X-E2E-Trust-Token"], "test-token")
     

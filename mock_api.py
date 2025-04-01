@@ -302,7 +302,7 @@ def company_llm_api():
     
     # 验证请求头 - 检查认证信息
     headers = request.headers
-    app_id = headers.get('AGI-Platform-Application-ID')
+    app_id = headers.get('GAI-Platform-Application-ID')
     user_login = headers.get('X-DSP-User-Login-As')
     token = headers.get('X-E2E-Trust-Token')
     
@@ -374,7 +374,7 @@ def azure_openai_api(deployment_id):
     
     # 验证请求头
     headers = request.headers
-    app_id = headers.get('AGI-Platform-Application-ID')
+    app_id = headers.get('GAI-Platform-Application-ID')
     user_login = headers.get('X-DSP-User-Login-As')
     token = headers.get('X-E2E-Trust-Token')
     api_key = headers.get('api-key')
