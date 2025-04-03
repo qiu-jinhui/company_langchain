@@ -1,17 +1,18 @@
 # 公司LLM适配器
 
-这个项目提供了自定义的LangChain模型实现，用于连接公司内部的LLM API以及Azure OpenAI API，并与LangChain生态系统进行集成。
+这个项目提供了自定义的LangChain模型实现，用于连接公司内部的LLM API和嵌入模型API，并与LangChain生态系统进行集成。
 
 ## 功能特点
 
-- 提供两种适配器实现：
+- 提供三种适配器实现：
   - `CompanyChatModel`: 连接公司内部LLM API
   - `CompanyAzureChatModel`: 连接Azure OpenAI API
+  - `CompanyEmbeddings`: 连接公司内部嵌入模型API
 - 支持公司特定的认证头部（GAI-Platform-Application-ID、X-DSP-User-Login-As、X-E2E-Trust-Token）
 - 内置令牌刷新机制，可自动刷新过期令牌
 - 强大的重试机制，能够自动处理临时性错误
 - 支持同步和异步调用方式
-- 支持流式响应（streaming）
+- 支持流式响应（ChatModel）和批量处理（Embeddings）
 - 与OpenAI API和Azure OpenAI API兼容的请求和响应格式
 - 与LangChain框架无缝集成
 - 支持各种LLM参数配置（温度、最大token数等）
@@ -83,6 +84,52 @@ for chunk in llm.stream(messages):
     print(chunk.content, end="", flush=True)
 ```
 
+### 公司嵌入模型API适配器
+
+```python
+from company_embedding import CompanyEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_core.documents import Document
+from pydantic import SecretStr
+
+# 初始化嵌入模型
+embeddings = CompanyEmbeddings(
+    api_url="您的公司嵌入模型API URL",
+    application_id="您的应用ID",
+    trust_token=SecretStr("您的信任令牌"),
+    model="text-embedding-ada-002",  # 或您公司支持的模型名称
+    # 启用令牌刷新
+    token_refresh_enabled=True,
+    token_url="https://api.company.com/token",
+    username=SecretStr("your_username"),
+    password=SecretStr("your_password"),
+    # 配置重试机制
+    max_retries=6,
+    retry_min_delay=1.0,
+    retry_max_delay=60.0,
+    retry_backoff_factor=2.0,
+)
+
+# 生成单个文本的嵌入
+text = "这是一个测试文本"
+embedding = embeddings.embed_query(text)
+print(f"嵌入向量维度: {len(embedding)}")
+
+# 生成多个文本的嵌入
+texts = ["第一个文本", "第二个文本", "第三个文本"]
+embeddings_list = embeddings.embed_documents(texts)
+print(f"生成了{len(embeddings_list)}个嵌入向量")
+
+# 与向量存储集成
+documents = [
+    Document(page_content="LangChain是一个强大的框架，用于开发由语言模型驱动的应用程序。"),
+    Document(page_content="向量数据库是存储向量嵌入的专用数据库，支持高效的相似性搜索。"),
+    Document(page_content="嵌入模型将文本转换为数值向量，捕获语义信息。")
+]
+vector_store = FAISS.from_documents(documents, embeddings)
+results = vector_store.similarity_search("什么是语义搜索？", k=2)
+```
+
 ### Azure OpenAI API适配器
 
 ```python
@@ -129,6 +176,8 @@ for chunk in llm.stream(messages):
 
 ### 异步调用示例
 
+#### 异步LLM调用
+
 ```python
 import asyncio
 from company_llm import CompanyChatModel
@@ -155,6 +204,33 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+#### 异步嵌入生成
+
+```python
+import asyncio
+from company_embedding import CompanyEmbeddings
+
+async def main():
+    embeddings = CompanyEmbeddings(
+        api_url="您的公司嵌入模型API URL",
+        application_id="您的应用ID",
+        trust_token=SecretStr("您的信任令牌"),
+    )
+    
+    # 异步生成多个文本的嵌入
+    texts = ["第一个文本", "第二个文本", "第三个文本"]
+    embeddings_list = await embeddings.aembed_documents(texts)
+    print(f"生成了{len(embeddings_list)}个嵌入向量")
+    
+    # 异步生成单个查询的嵌入
+    query = "这是一个查询文本"
+    query_embedding = await embeddings.aembed_query(query)
+    print(f"查询嵌入向量维度: {len(query_embedding)}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
 ## 模拟API服务器
 
 项目包含一个模拟API服务器，用于开发和测试LLM适配器，无需连接真实的API。
@@ -176,10 +252,11 @@ python run_mock_api.py --port 5001 --llm-error-rate 0.2 --azure-error-rate 0.2
 
 ```python
 from company_llm import CompanyChatModel
+from company_embedding import CompanyEmbeddings
 from langchain_core.messages import HumanMessage
 from pydantic import SecretStr
 
-# 连接到模拟服务器
+# 连接到模拟服务器（LLM）
 llm = CompanyChatModel(
     api_url="http://localhost:5001/v1/chat/completions",
     application_id="test-app-id",
@@ -192,9 +269,25 @@ llm = CompanyChatModel(
     password=SecretStr("test_password"),
 )
 
-# 调用模拟API
+# 调用模拟LLM API
 response = llm.invoke([HumanMessage(content="你好，这是一个测试")])
 print(response.content)
+
+# 连接到模拟服务器（嵌入模型）
+embeddings = CompanyEmbeddings(
+    api_url="http://localhost:5001/v1/embeddings",
+    application_id="test-app-id",
+    trust_token=SecretStr("test-token"),
+    # 启用令牌刷新
+    token_refresh_enabled=True,
+    token_url="http://localhost:5001/api/token",
+    username=SecretStr("test_user"),
+    password=SecretStr("test_password"),
+)
+
+# 调用模拟嵌入API
+embedding = embeddings.embed_query("这是一个嵌入测试")
+print(f"嵌入向量维度: {len(embedding)}")
 ```
 
 ## 配置参数
@@ -228,6 +321,27 @@ print(response.content)
 | retry_on_status_codes | 整数列表 | 需要重试的HTTP状态码 | [429, 500, 502, 503, 504] |
 | streaming | 布尔值 | 是否使用流式传输 | False |
 | n | 整数 | 生成的回复数量 | 1 |
+
+### CompanyEmbeddings 参数
+
+| 参数 | 类型 | 描述 | 默认值 |
+|------|------|------|--------|
+| api_url | 字符串 | 公司嵌入模型API的URL | 必填 |
+| application_id | 字符串 | GAI-Platform-Application-ID头部 | 必填 |
+| trust_token | SecretStr | X-E2E-Trust-Token头部 | 必填 |
+| model | 字符串 | 使用的模型名称 | "text-embedding-ada-002" |
+| timeout | 浮点数 | API请求超时时间（秒） | None |
+| token_refresh_enabled | 布尔值 | 是否启用令牌自动刷新 | False |
+| token_url | 字符串 | 令牌刷新API的URL | None |
+| username | SecretStr | 用于令牌刷新的用户名 | None |
+| password | SecretStr | 用于令牌刷新的密码 | None |
+| token_refresh_interval | 整数 | 令牌最小刷新间隔（秒） | 0 |
+| max_retries | 整数 | 最大重试次数 | 6 |
+| retry_min_delay | 浮点数 | 重试的最小延迟时间（秒） | 1.0 |
+| retry_max_delay | 浮点数 | 重试的最大延迟时间（秒） | 60.0 |
+| retry_backoff_factor | 浮点数 | 重试延迟的退避系数 | 2.0 |
+| retry_jitter | 布尔值 | 是否在重试延迟时间上添加随机抖动 | True |
+| retry_on_status_codes | 整数列表 | 需要重试的HTTP状态码 | [429, 500, 502, 503, 504] |
 
 ### CompanyAzureChatModel 参数
 
